@@ -28,7 +28,7 @@
 %% @end
 %%===================================================================
 -module(co_sys_app).
--include_lib("canopen/include/canopen.hrl").
+-include_lib("canopen.hrl").
 -include("co_app.hrl").
 -include("co_debug.hrl").
 
@@ -36,20 +36,20 @@
 -behaviour(co_app).
 
 %% API
--export([start_link/1, 
+-export([start_link/1,
 	 stop/1]).
 
 %% gen_server callbacks
--export([init/1, 
-	 handle_call/3, 
-	 handle_cast/2, 
+-export([init/1,
+	 handle_call/3,
+	 handle_cast/2,
 	 handle_info/2,
-	 terminate/2, 
+	 terminate/2,
 	 code_change/3]).
 
 %% co_app callbacks
 -export([index_specification/2,
-	 set/3, 
+	 set/3,
 	 get/2]).
 
 %% Test
@@ -74,20 +74,20 @@
 %% Starts the server.
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(CoNode::node_identity()) -> 
-		   {ok, Pid::pid()} | 
-		   ignore | 
+-spec start_link(CoNode::node_identity()) ->
+		   {ok, Pid::pid()} |
+		   ignore |
 		   {error, Error::atom()}.
 
 start_link(CoNode) ->
     gen_server:start_link({local, name(CoNode)}, ?MODULE, CoNode,[]).
-	
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Stops the server.
 %% @end
 %%--------------------------------------------------------------------
--spec stop(CoNode::node_identity()) -> ok | 
+-spec stop(CoNode::node_identity()) -> ok |
 		{error, Error::atom()}.
 
 stop(CoNode) ->
@@ -107,7 +107,7 @@ stop(CoNode) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec index_specification(Pid::pid(), {Index::integer(), SubInd::integer()}) -> 
+-spec index_specification(Pid::pid(), {Index::integer(), SubInd::integer()}) ->
 		       {spec, Spec::#index_spec{}} |
 		       {error, Reason::atom()}.
 
@@ -222,7 +222,7 @@ init(CoNode) ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Handling call messages.
-%% Used for transfer mode atomic (set, get) and streamed 
+%% Used for transfer mode atomic (set, get) and streamed
 %% (write_begin, write, read_begin, read).
 %%
 %% Index = Index in Object Dictionary <br/>
@@ -230,8 +230,8 @@ init(CoNode) ->
 %% Value =  Any value the node chooses to send.
 %%
 %% For description of requests compare with the correspondig functions:
-%% @see set/3  
-%% @see get/2 
+%% @see set/3
+%% @see get/2
 %% @end
 %%--------------------------------------------------------------------
 -type call_request()::
@@ -251,36 +251,36 @@ handle_call({set, {?IX_STORE_PARAMETERS, ?SI_STORE_ALL}, Flag}, _From, LoopData)
     ?dbg(?NAME," handle_call: store all",[]),
     handle_store(LoopData, Flag);
 handle_call({set, {?IX_STORE_PARAMETERS, _SubInd}, _NewValue}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: set store unknown subindex ~.8B ",[_SubInd]),    
+    ?dbg(?NAME, "handle_call: set store unknown subindex ~.8B ",[_SubInd]),
     {reply, {error, ?abort_no_such_subindex}, LoopData};
 handle_call({set, {?IX_RESTORE_DEFAULT_PARAMETERS, ?SI_RESTORE_ALL}, Flag}, _From, LoopData) ->
     ?dbg(?NAME," handle_call: restore all",[]),
     handle_restore(LoopData, Flag);
 handle_call({set, {?IX_RESTORE_DEFAULT_PARAMETERS, _SubInd}, _NewValue}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: set restore unknown subindex ~.8B ",[_SubInd]),    
+    ?dbg(?NAME, "handle_call: set restore unknown subindex ~.8B ",[_SubInd]),
     {reply, {error, ?abort_no_such_subindex}, LoopData};
 handle_call({set, {_Index, _SubInd}, _NewValue}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: set ~.16B:~.8B ",[_Index, _SubInd]),    
+    ?dbg(?NAME, "handle_call: set ~.16B:~.8B ",[_Index, _SubInd]),
     {reply, {error, ?abort_no_such_object}, LoopData};
 handle_call({get, {?IX_STORE_PARAMETERS, 0}}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: get object size = 1",[]),    
+    ?dbg(?NAME, "handle_call: get object size = 1",[]),
     {reply, {ok, 1}, LoopData};
 handle_call({get, {?IX_STORE_PARAMETERS, ?SI_STORE_ALL}}, _From, LoopData) ->
     ?dbg(?NAME, "handle_call: get store all",[]),
     %% Device supports save on command
     {reply, {ok, 0}, LoopData};
 handle_call({get, {?IX_STORE_PARAMETERS, _SubInd}}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: get store unknown subindex ~.8B ",[_SubInd]),    
+    ?dbg(?NAME, "handle_call: get store unknown subindex ~.8B ",[_SubInd]),
     {reply, {error, ?abort_no_such_subindex}, LoopData};
 handle_call({get, {?IX_RESTORE_DEFAULT_PARAMETERS, 0}}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: get object size = 3",[]),    
+    ?dbg(?NAME, "handle_call: get object size = 3",[]),
     {reply, {ok, 3}, LoopData};
 handle_call({get, {?IX_RESTORE_DEFAULT_PARAMETERS, ?SI_STORE_ALL}}, _From, LoopData) ->
     ?dbg(?NAME, "handle_call: get store_all",[]),
     %% Device supports save on command
     {reply, {ok, 0}, LoopData};
 handle_call({get, {?IX_RESTORE_DEFAULT_PARAMETERS, _SubInd}}, _From, LoopData) ->
-    ?dbg(?NAME, "handle_call: get unknown subindex ~.8B ",[_SubInd]),    
+    ?dbg(?NAME, "handle_call: get unknown subindex ~.8B ",[_SubInd]),
     {reply, {error, ?abort_no_such_subindex}, LoopData};
 handle_call({get, {_Index, _SubInd}}, _From, LoopData) ->
     ?dbg(?NAME, "handle_call: get ~.16B:~.8B ",[_Index, _SubInd]),
@@ -292,7 +292,7 @@ handle_call({debug, TrueOrFalse}, _From, LoopData) ->
     put(dbg, TrueOrFalse),
     {reply, ok, LoopData};
 handle_call(stop, _From, LoopData) ->
-    ?dbg(?NAME," handle_call: stop",[]),    
+    ?dbg(?NAME," handle_call: stop",[]),
     handle_stop(LoopData);
 handle_call(_Request, _From, LoopData) ->
     ?dbg(?NAME," handle_call: bad call ~p.",[_Request]),
@@ -329,7 +329,7 @@ handle_stop(LoopData=#loop_data {co_node = CoNode}) ->
 	    co_api:unreserve(CoNode, ?IX_STORE_PARAMETERS),
 	    co_api:unreserve(CoNode, ?IX_RESTORE_DEFAULT_PARAMETERS),
 	    co_api:detach(CoNode);
-	false -> 
+	false ->
 	    do_nothing %% Not possible to detach and unsubscribe
     end,
     ?dbg(?NAME," handle_stop: detached.",[]),
@@ -345,15 +345,15 @@ handle_stop(LoopData=#loop_data {co_node = CoNode}) ->
 			 {noreply, LoopData::#loop_data{}} |
 			 {noreply, LoopData::#loop_data{}, Timeout::timeout()} |
 			 {stop, Reason::atom(), LoopData::#loop_data{}}.
-			 
-handle_cast({name_change, OldName, NewName}, 
+
+handle_cast({name_change, OldName, NewName},
 	    LoopData=#loop_data {co_node = {name, OldName}}) ->
-   ?dbg(?NAME, "handle_cast: co_node name change from ~p to ~p.", 
+   ?dbg(?NAME, "handle_cast: co_node name change from ~p to ~p.",
 	 [OldName, NewName]),
     {noreply, LoopData#loop_data {co_node = {name, NewName}}};
 
 handle_cast({name_change, _OldName, _NewName}, LoopData) ->
-   ?dbg(?NAME, "handle_cast: co_node name change from ~p to ~p, ignored.", 
+   ?dbg(?NAME, "handle_cast: co_node name change from ~p to ~p, ignored.",
 	 [_OldName, _NewName]),
     {noreply, LoopData};
 
@@ -371,7 +371,7 @@ handle_cast(_Msg, LoopData) ->
 			 {noreply, LoopData::#loop_data{}} |
 			 {noreply, LoopData::#loop_data{}, Timeout::timeout()} |
 			 {stop, Reason::atom(), LoopData::#loop_data{}}.
-			 
+
 handle_info(_Info, LoopData) ->
     ?dbg(?NAME," handle_info: Unknown Info ~p", [_Info]),
     {noreply, LoopData}.
@@ -380,7 +380,7 @@ handle_info(_Info, LoopData) ->
 %% @private
 %%
 %%--------------------------------------------------------------------
--spec terminate(Reason::term(), LoopData::#loop_data{}) -> 
+-spec terminate(Reason::term(), LoopData::#loop_data{}) ->
 		       no_return().
 
 terminate(_Reason, _LoopData) ->
@@ -394,7 +394,7 @@ terminate(_Reason, _LoopData) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec code_change(OldVsn::term(), LoopData::#loop_data{}, Extra::term()) -> 
+-spec code_change(OldVsn::term(), LoopData::#loop_data{}, Extra::term()) ->
 			 {ok, NewLoopData::#loop_data{}}.
 
 code_change(_OldVsn, LoopData, _Extra) ->
@@ -403,7 +403,7 @@ code_change(_OldVsn, LoopData, _Extra) ->
     %% reserved it is vital to unreserve the indexes no longer used.
     {ok, LoopData}.
 
-     
+
 %%%===================================================================
 %%% Support functions
 %%%===================================================================

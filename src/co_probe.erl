@@ -57,7 +57,8 @@ loop(S) ->
 	    loop(S1);
 	Other ->
 	    io:format("other: ~p\n", [Other]),
-	    ?MODULE:loop(S)
+	    Module=?MODULE,
+	    Module:loop(S)
     end.
 
 print_message(S, Frame) ->
@@ -118,7 +119,7 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 			    case print_sdo_tx(Frame) of
 				false -> S;
 				Block ->
-				    io:format("ADD: id=~p,block=~p\n", 
+				    io:format("ADD: id=~p,block=~p\n",
 					      [ID, Block]),
 				    E=#s{id=ID,block=Block},
 				    Session2 = [E|Session0],
@@ -129,7 +130,7 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 				upload ->
 				    case print_sdo_tx_block(Frame) of
 					true ->
-					    Session2 = 
+					    Session2 =
 						[E#s{block=false}|Session1],
 					    S#state{session=Session2};
 					false ->
@@ -139,7 +140,7 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 				    case print_sdo_tx(Frame) of
 					false -> S;
 					Block ->
-					    io:format("ADD: id=~p,block=~p\n", 
+					    io:format("ADD: id=~p,block=~p\n",
 						      [ID, Block]),
 					    E1=E#s{block=Block},
 					    Session2 = [E1|Session1],
@@ -161,10 +162,10 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 		    case lists:keytake(ID, #s.id, Session0) of
 			false ->
 			    case print_sdo_rx(Frame) of
-				false -> 
+				false ->
 				    S;
 				Block ->
-				    io:format("ADD: id=~p,block=~p\n", 
+				    io:format("ADD: id=~p,block=~p\n",
 					      [ID, Block]),
 				    E=#s{id=ID,block=Block},
 				    Session2 = [E|Session0],
@@ -175,7 +176,7 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 				download ->
 				    case print_sdo_rx_block(Frame) of
 					true ->
-					    Session2 = 
+					    Session2 =
 						[E#s{block=false}|Session1],
 					    S#state{session=Session2};
 					false ->
@@ -185,7 +186,7 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
 				    case print_sdo_rx(Frame) of
 					false -> S;
 					Block ->
-					    io:format("ADD: id=~p,block=~p\n", 
+					    io:format("ADD: id=~p,block=~p\n",
 						      [ID, Block]),
 					    E1=E#s{block=Block},
 					    Session2 = [E1|Session1],
@@ -200,8 +201,8 @@ print_message(S,Ext,Func,CobId,NodeId,Frame) ->
     end.
 
 
-print_node_guard(Frame) ->    
-    io:format("NODE-GUARD(~s): ~s: ~s\n", 
+print_node_guard(Frame) ->
+    io:format("NODE-GUARD(~s): ~s: ~s\n",
 	      [co_format:node_id(Frame),
 	       co_format:message_id(Frame),
 	       format_node_guard(Frame#can_frame.data)
@@ -225,8 +226,8 @@ print_sdo_tx_block(Frame) ->
     case Frame#can_frame.data of
 	?ma_block_segment(Last,Seq,Data) ->
 	    Pdu = #sdo_block_segment{last=Last,seqno=Seq,d=Data},
-	    io:format("SDO_TX(~s): ~s: ~s\n", 
-		      [co_format:node_id(Frame), 
+	    io:format("SDO_TX(~s): ~s: ~s\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       co_format:format_sdo(Pdu)]),
 	    Last =:= 1
@@ -236,13 +237,13 @@ print_sdo_tx_block(Frame) ->
 print_sdo_tx(Frame) ->
     case catch co_sdo:decode_tx(Frame#can_frame.data) of
 	{'EXIT', Reason} ->
-	    io:format("SDO_TX(~s): ~s: decode-error: ~p, ~p\n", 
-		      [co_format:node_id(Frame), 
+	    io:format("SDO_TX(~s): ~s: decode-error: ~p, ~p\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       Reason,Frame]);
-	Pdu ->	    
-	    io:format("SDO_TX(~s): ~s: ~s\n", 
-		      [co_format:node_id(Frame), 
+	Pdu ->
+	    io:format("SDO_TX(~s): ~s: ~s\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       co_format:format_sdo(Pdu)]),
 	    case Pdu of
@@ -257,8 +258,8 @@ print_sdo_rx_block(Frame) ->
     case Frame#can_frame.data of
 	?ma_block_segment(Last,Seq,Data) ->
 	    Pdu = #sdo_block_segment{last=Last,seqno=Seq,d=Data},
-	    io:format("SDO_RX(~s): ~s: ~s\n", 
-		      [co_format:node_id(Frame), 
+	    io:format("SDO_RX(~s): ~s: ~s\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       co_format:format_sdo(Pdu)]),
 	    Last =:= 1
@@ -268,13 +269,13 @@ print_sdo_rx_block(Frame) ->
 print_sdo_rx(Frame) ->
     case catch co_sdo:decode_rx(Frame#can_frame.data) of
 	{'EXIT', Reason} ->
-	    io:format("SDO_RX(~s): ~s: decode-error: ~p, ~p\n", 
-		      [co_format:node_id(Frame), 
+	    io:format("SDO_RX(~s): ~s: decode-error: ~p, ~p\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       Reason,Frame]);
 	Pdu ->
-	    io:format("SDO_RX(~s): ~s: ~s\n", 
-		      [co_format:node_id(Frame), 
+	    io:format("SDO_RX(~s): ~s: ~s\n",
+		      [co_format:node_id(Frame),
 		       co_format:message_id(Frame),
 		       co_format:format_sdo(Pdu)]),
 	    case Pdu of
@@ -286,11 +287,11 @@ print_sdo_rx(Frame) ->
     end.
 
 print_pdo_tx(Frame) ->
-    io:format("TPDO: ~s: ~p\n", 
+    io:format("TPDO: ~s: ~p\n",
 	      [co_format:message_id(Frame), Frame#can_frame.data]).
 
 print_pdo_rx(Frame) ->
-    io:format("RPDO: ~s: ~p\n", 
+    io:format("RPDO: ~s: ~p\n",
 	      [co_format:message_id(Frame), Frame#can_frame.data]).
 
-	    
+

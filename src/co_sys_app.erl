@@ -27,7 +27,7 @@
 %% @end
 %%===================================================================
 -module(co_sys_app).
--include_lib("canopen/include/canopen.hrl").
+-include_lib("canopen.hrl").
 -include("co_app.hrl").
 -include("co_debug.hrl").
 
@@ -35,20 +35,20 @@
 -behaviour(co_app).
 
 %% API
--export([start_link/1, 
+-export([start_link/1,
 	 stop/1]).
 
 %% gen_server callbacks
--export([init/1, 
-	 handle_call/3, 
-	 handle_cast/2, 
+-export([init/1,
+	 handle_call/3,
+	 handle_cast/2,
 	 handle_info/2,
-	 terminate/2, 
+	 terminate/2,
 	 code_change/3]).
 
 %% co_app callbacks
 -export([index_specification/2,
-	 set/3, 
+	 set/3,
 	 get/2]).
 
 %% Test
@@ -69,20 +69,20 @@
 %% Starts the server.
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(CoNode::node_identity()) -> 
-		   {ok, Pid::pid()} | 
-		   ignore | 
+-spec start_link(CoNode::node_identity()) ->
+		   {ok, Pid::pid()} |
+		   ignore |
 		   {error, Error::atom()}.
 
 start_link(CoNode) ->
     gen_server:start_link({local, name(CoNode)}, ?MODULE, CoNode,[]).
-	
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Stops the server.
 %% @end
 %%--------------------------------------------------------------------
--spec stop(CoNode::node_identity()) -> ok | 
+-spec stop(CoNode::node_identity()) -> ok |
 		{error, Error::atom()}.
 
 stop(CoNode) ->
@@ -217,7 +217,7 @@ init(CoNode) ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Handling call messages.
-%% Used for transfer mode atomic (set, get) and streamed 
+%% Used for transfer mode atomic (set, get) and streamed
 %% (write_begin, write, read_begin, read).
 %%
 %% Index = Index in Object Dictionary <br/>
@@ -225,8 +225,8 @@ init(CoNode) ->
 %% Value =  Any value the node chooses to send.
 %%
 %% For description of requests compare with the correspondig functions:
-%% @see set/3  
-%% @see get/2 
+%% @see set/3
+%% @see get/2
 %% @end
 %%--------------------------------------------------------------------
 -type call_request()::
@@ -324,7 +324,7 @@ handle_stop(LD=#loop_data {co_node = CoNode}) ->
 	    co_api:unreserve(CoNode, ?IX_STORE_PARAMETERS),
 	    co_api:unreserve(CoNode, ?IX_RESTORE_DEFAULT_PARAMETERS),
 	    co_api:detach(CoNode);
-	false -> 
+	false ->
 	    do_nothing %% Not possible to detach and unsubscribe
     end,
     ?dbg("handle_stop: detached.",[]),
@@ -398,7 +398,7 @@ code_change(_OldVsn, LD, _Extra) ->
     %% reserved it is vital to unreserve the indexes no longer used.
     {ok, LD}.
 
-     
+
 %%%===================================================================
 %%% Support functions
 %%%===================================================================

@@ -20,7 +20,7 @@
 %% @doc
 %%    OS command CANopen application.<br/>
 %%    Implements index 16#1023 (os_command).<br/>
-%%    os_command makes it possible to send an os command 
+%%    os_command makes it possible to send an os command
 %%    to a CANOpen node and have it executed there. <br/>
 %%
 %% File: co_os_app.erl<br/>
@@ -28,7 +28,7 @@
 %% @end
 %%-----------------------------------------------------------------------------
 -module(co_os_app).
--include_lib("canopen/include/canopen.hrl").
+-include_lib("canopen.hrl").
 -include("co_app.hrl").
 -include("co_debug.hrl").
 
@@ -40,25 +40,25 @@
 -behaviour(co_stream_app).
 
 %% API
--export([start/1, 
-	 start_link/1, 
+-export([start/1,
+	 start_link/1,
 	 stop/1]).
 
 %% gen_server callbacks
--export([init/1, 
-	 handle_call/3, 
-	 handle_cast/2, 
+-export([init/1,
+	 handle_call/3,
+	 handle_cast/2,
 	 handle_info/2,
-	 terminate/2, 
+	 terminate/2,
 	 code_change/3]).
 
 %% co_app and co_stream_app callbacks
 -export([index_specification/2,
-	 set/3, 
+	 set/3,
 	 get/2,
-	 write_begin/3, 
+	 write_begin/3,
 	 write/4,
-	 read_begin/3, 
+	 read_begin/3,
 	 read/3,
 	 abort/3]).
 
@@ -90,20 +90,20 @@
 %% Starts the server.
 %% @end
 %%--------------------------------------------------------------------
--spec start_link(CoNode::node_identity()) -> 
-		   {ok, Pid::pid()} | 
-		   ignore | 
+-spec start_link(CoNode::node_identity()) ->
+		   {ok, Pid::pid()} |
+		   ignore |
 		   {error, Error::atom()}.
 
 start_link(CoNode) ->
     gen_server:start_link({local,  name(CoNode)}, ?MODULE, CoNode,[]).
-	
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Stops the server.
 %% @end
 %%--------------------------------------------------------------------
--spec stop(CoNode::node_identity()) -> ok | 
+-spec stop(CoNode::node_identity()) -> ok |
 		{error, Error::atom()}.
 
 stop(Pid) when is_pid(Pid)->
@@ -119,14 +119,14 @@ stop(CoNode) ->
 %% Starts the server.
 %% @end
 %%--------------------------------------------------------------------
--spec start(CoNode::node_identity()) -> 
-		   {ok, Pid::pid()} | 
-		   ignore | 
+-spec start(CoNode::node_identity()) ->
+		   {ok, Pid::pid()} |
+		   ignore |
 		   {error, Error::atom()}.
 
 start(CoNode) ->
     gen_server:start({local,  name(CoNode)}, ?MODULE, CoNode,[]).
-	
+
 %%--------------------------------------------------------------------
 %%% CAllbacks for co_app and co_stream_app behavious
 %%--------------------------------------------------------------------
@@ -138,7 +138,7 @@ start(CoNode) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec index_specification(Pid::pid(), {Index::integer(), SubInd::integer()}) -> 
+-spec index_specification(Pid::pid(), {Index::integer(), SubInd::integer()}) ->
 		       {spec, Spec::#index_spec{}} |
 		       {error, Reason::atom()}.
 
@@ -213,7 +213,7 @@ get(Pid, {Index, SubInd}) ->
 %% Used for transfer_mode =  {streamed, Module}
 %% @end
 %%--------------------------------------------------------------------
--spec write_begin(Pid::pid(), {Index::integer(), SubInd::integer()}, 
+-spec write_begin(Pid::pid(), {Index::integer(), SubInd::integer()},
 		  Ref::reference()) ->
 		 {ok, Ref::reference(), WriteSize::integer()} |
 		 {error, Reason::atom()}.
@@ -241,7 +241,7 @@ write(Pid, Ref, Data, EodFlag) ->
 %% Used for transfer_mode =  {streamed, Module}
 %% @end
 %%--------------------------------------------------------------------
--spec read_begin(Pid::pid(), {Index::integer(), SubInd::integer()}, 
+-spec read_begin(Pid::pid(), {Index::integer(), SubInd::integer()},
 		  Ref::reference()) ->
 		 {ok, Ref::reference(), Size::integer()} |
 		 {error, Reason::atom()}.
@@ -274,7 +274,7 @@ read(Pid, Ref, Bytes) ->
 abort(Pid, Ref, Reason) ->
     ?dbg("abort ref = ~p\n",[Ref]),
     gen_server:cast(Pid, {abort, Ref, Reason}).
-    
+
 %% Test functions
 %% @private
 debug(Pid, TrueOrFalse) when is_boolean(TrueOrFalse) ->
@@ -309,7 +309,7 @@ init(CoNode) ->
 %%--------------------------------------------------------------------
 %% @doc
 %% Handling call messages.
-%% Used for transfer mode atomic (set, get) and streamed 
+%% Used for transfer mode atomic (set, get) and streamed
 %% (write_begin, write, read_begin, read).
 %%
 %% Index = Index in Object Dictionary <br/>
@@ -318,8 +318,8 @@ init(CoNode) ->
 %% Ref - Reference in communication with the CANopen node.
 %%
 %% For description of requests compare with the correspondig functions:
-%% @see set/3  
-%% @see get/2 
+%% @see set/3
+%% @see get/2
 %% @see write_begin/3
 %% @see write/4
 %% @see read_begin/3
@@ -445,11 +445,11 @@ handle_command(LoopData=#loop_data {command = Command, ref = Ref})
 handle_command(LoopData=#loop_data {command = Command}) ->
     ?dbg("handle_command: convert iolist = ~p.\n",[Command]),
     try iolist_size(Command) of
-	_Size -> 
-	    handle_command(LoopData#loop_data 
+	_Size ->
+	    handle_command(LoopData#loop_data
 			   {command = binary_to_list(iolist_to_binary(Command))})
     catch
-	{error, _Reason} -> 
+	{error, _Reason} ->
 	    {reply, {error, ?abort_local_data_error}, LoopData}
     end.
 
@@ -478,21 +478,21 @@ execute_command(Command) ->
 handle_read(Bytes, LoopData=#loop_data {ref = Ref, read_buf = Data}) ->
     Size = size(Data),
     case Size - Bytes of
-	RestSize when RestSize > 0 -> 
+	RestSize when RestSize > 0 ->
 	    <<DataToSend:Bytes/binary, RestData/binary>> = Data,
-	    {reply, {ok, Ref, DataToSend, false}, 
+	    {reply, {ok, Ref, DataToSend, false},
 	     LoopData#loop_data {read_buf = RestData}};
 	RestSize when RestSize < 0 ->
 	    {reply, {ok, Ref, Data, true}, LoopData#loop_data {read_buf = (<<>>)}}
     end.
-    
+
 
 handle_stop(LoopData) ->
     case co_api:alive(LoopData#loop_data.co_node) of
 	true ->
 	    co_api:unreserve(LoopData#loop_data.co_node, ?IX_OS_COMMAND),
 	    co_api:detach(LoopData#loop_data.co_node);
-	false -> 
+	false ->
 	    do_nothing %% Not possible to detach and unsubscribe
     end,
     ?dbg("handle_stop: detached.\n",[]),
@@ -504,9 +504,9 @@ handle_stop(LoopData) ->
 %% Handling cast messages.
 %%
 %% Ref - Reference in communication with the CANopen node.
-%% 
+%%
 %% For description of message compare with the correspondig functions:
-%% @see abort/2  
+%% @see abort/2
 %% @end
 %%--------------------------------------------------------------------
 -type cast_msg()::
@@ -516,7 +516,7 @@ handle_stop(LoopData) ->
 
 -spec handle_cast(Msg::cast_msg(), LoopData::#loop_data{}) ->
 			 {noreply, LoopData::#loop_data{}}.
-			 
+
 handle_cast({abort, Ref, _Reason}, LoopData) ->
     ?dbg("handle_cast: abort ref = ~p, reason\n", [Ref, _Reason]),
      if Ref =/= LoopData#loop_data.ref ->
@@ -529,7 +529,7 @@ handle_cast({abort, Ref, _Reason}, LoopData) ->
 					   command = "", status = 0, reply = ""}}
      end;
 
-handle_cast({name_change, OldName, NewName}, 
+handle_cast({name_change, OldName, NewName},
 	    LoopData=#loop_data {co_node = {name, OldName}}) ->
    ?dbg("handle_cast: co_node name change from ~p to ~p.", 
 	 [OldName, NewName]),
@@ -552,7 +552,7 @@ handle_cast(_Msg, LoopData) ->
 %% Info types: <br/>
 %% {Status, Reply} - When spawned process has finished executing. <br/>
 %% {'EXIT', Pid, Reason} - When spawned process has terminated. <br/>
-%% 
+%%
 %% @end
 %%--------------------------------------------------------------------
 -type info()::
@@ -563,12 +563,12 @@ handle_cast(_Msg, LoopData) ->
 
 -spec handle_info(Info::info(), LoopData::#loop_data{}) ->
 			 {noreply, LoopData::#loop_data{}}.
-			 
+
 handle_info({Status, Reply} = _Info, LoopData) ->
     %% Result received from spawned process
     ?dbg("handle_info: Received result ~p\n", [_Info]),
     {noreply, LoopData#loop_data {state = executed,
-				  status = Status, 
+				  status = Status,
 				  reply = Reply}};
 
 handle_info({'EXIT', Pid, normal}, LoopData=#loop_data {exec_pid = Pid}) ->
@@ -578,7 +578,7 @@ handle_info({'EXIT', Pid, _Reason}, LoopData=#loop_data {exec_pid = Pid}) ->
     ?dbg("handle_info: unexpected EXIT for process ~p received, reason ~p", 
 	 [Pid, _Reason]),
      {noreply, LoopData#loop_data {state = executed,
-				   status = 3, 
+				   status = 3,
 				   reply = "Internal Error"}};
 handle_info({'EXIT', _Pid, _Reason}, LoopData) ->
     %% Other process terminated
@@ -593,7 +593,7 @@ handle_info(_Info, LoopData) ->
 %%--------------------------------------------------------------------
 %% @private
 %%--------------------------------------------------------------------
--spec terminate(Reason::term(), LoopData::#loop_data{}) -> 
+-spec terminate(Reason::term(), LoopData::#loop_data{}) ->
 		       no_return().
 
 terminate(_Reason, _LoopData) ->
@@ -606,7 +606,7 @@ terminate(_Reason, _LoopData) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec code_change(OldVsn::term(), LoopData::#loop_data{}, Extra::term()) -> 
+-spec code_change(OldVsn::term(), LoopData::#loop_data{}, Extra::term()) ->
 			 {ok, NewLoopData::#loop_data{}}.
 
 code_change(_OldVsn, LoopData, _Extra) ->
@@ -615,7 +615,7 @@ code_change(_OldVsn, LoopData, _Extra) ->
     %% reserved it is vital to unreserve the indexes no longer used.
     {ok, LoopData}.
 
-     
+
 %%%===================================================================
 %%% Support functions
 %%%===================================================================
